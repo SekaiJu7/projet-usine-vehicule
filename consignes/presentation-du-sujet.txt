@@ -1,0 +1,12 @@
+le générateur de document sera appelé depuis la restAPI.
+template HTML avec CSS recommandé (notions de header, footers, titles, bold, sauts de page si on a le temps) pour le document pdf. 
+requête sql, langage au choix pour gérér dynamiquement le document.
+il existe des librairies pour convertir html en pdf.
+
+génération soit par cli soit par restAPI
+
+
+On peut concevoir le document html, puis utiliser node.js ou python pour faire le lien entre le nouveau document pdf généré
+et les données stockées en base.
+
+demander s'il faut l'ouvrir dans navigateur et dans acrobat etc ? 
