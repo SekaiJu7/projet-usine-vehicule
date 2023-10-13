@@ -20,6 +20,8 @@ server.get('/', (req, res) => {
   res.sendFile(__dirname + '/interface3.html');
 });
 
+server.use(express.static(__dirname)); // Cela permettra de servir les fichiers statiques (comme les fichiers CSS).
+
 server.get('/vehicules', (req, res) => {
     // Connexion à la base de donnée SQlite
     const db = new sqlite3.Database('productionDB.sqlite', err => {
@@ -204,6 +206,8 @@ server.post('/submit', async function (req, res) {
         await page.pdf({ path: pdfFileName, format: 'A4', printBackground: true });
 
         await browser.close();
+
+        fs.unlinkSync('./cheer.html');
 
         console.log('Conversion en PDF terminée.');
         })();

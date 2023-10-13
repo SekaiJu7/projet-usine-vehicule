@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">    
     <title>Véhicule | choix</title> 
-    <link rel="stylesheet" href="interface3_css.css">     
+    <link rel="stylesheet" href="interface3.css">     
     <script src="jquery-3.7.1.min.js"></script>
     <script type = "text/javascript">
         $(document).ready(function(){
@@ -16,9 +16,9 @@
 <body>
    
     <div class="container">
-        <div class="choix">Cliquez içi pour Choisir votre voiture</div>
+        <div class="choix">Cliquez ici pour choisir votre véhicule</div>
         <div class="fold">
-            <form>
+            <form action="/submit" method="post">
                 <input type="text" class="input" placeholder="Poste" required>
                 <input type="text" class="input" placeholder="Ordre" required>
                 <label for=""> Véhicule</label>
