@@ -141,7 +141,7 @@ server.post('/submit', async function (req, res) {
     for (const posteV of postes_par_vehicule) {
     const incidentsData = await new Promise((resolve, reject) => {
                 //on récupère l'id incident et l'id ordre de travail s'ils existent et que l'ordre de travail concerne un incident
-                db.all('SELECT i.incident_id, o.ordre_id FROM incident i INNER JOIN ordre o ON i.ordre=o.ordre_id WHERE o.poste=' + posteV + ' AND o.vehicule =' + vehicule, (err, rows) => {
+                db.all('SELECT o.poste, i.incident_id, o.ordre_id, v.vehicule_desc, p.poste_desc FROM incident i INNER JOIN ordre o ON i.ordre=o.ordre_id INNER JOIN vehicule v ON o.vehicule=v.vehicule_id INNER JOIN poste p ON o.poste=p.poste_id WHERE o.poste=' + posteV + ' AND o.vehicule =' + vehicule, (err, rows) => {
                     if (err) {
                         console.log(err.message);
                         reject(err);
@@ -149,18 +149,23 @@ server.post('/submit', async function (req, res) {
                         //si on a un résultat de la base avec le poste étudié, on alimente la section poste avec un h3, p et une table 
                         if (rows.length > 0){
                             let section_poste = $('#section_poste');
-                            let h3 = '<h3>Poste de travail : <strong id="poste_desc"'+posteV+'></strong></h3>'
+                            let h3 = '<h3>Poste de travail : <strong class="poste_desc'+posteV+'"></strong></h3>'
                             section_poste.append(h3);
-                            let p = '<p>Le tableau ci-dessous montre la liste des incidents déclarés sur le poste de travail <strong id="poste_desc'+posteV+'">poste_desc</strong> pour le véhicule <strong id=vehicule_desc'+vehicule+'></strong>:</p>'
+                            let p = '<p>Le tableau ci-dessous montre la liste des incidents déclarés sur le poste de travail <strong class="poste_desc'+posteV+'">poste_desc</strong> pour le véhicule <strong id="vehicule_desc'+vehicule+'"></strong>:</p>'
                             section_poste.append(p);
+                            let vehicule_desc = $('#vehicule_desc'+vehicule);
+                            vehicule_desc.text(rows[0].vehicule_desc);
+                            let poste_desc = $('strong.poste_desc'+posteV);
+                            poste_desc.text(rows[0].poste_desc);
+                            // poste_desc.append(`${rows[0].poste}`);
                             let tb = '<div id="tables'+posteV+'"></div>'
                             section_poste.append(tb);
                             let poste_tables = $('#tables'+posteV);
                             let text_table_template = '<table id="tableToAppend'+posteV+'"><tr><th style="width: 50%;">ID</th><th style="width: 50%;">OT</th></tr></table><br>';
                             poste_tables.append(text_table_template);
-                            console.log('ca passe iciavec le poste: '+posteV, rows);
+                            console.log('ca passe ici avec le poste: '+posteV, rows);
                             for (i=0;i<rows.length;i++){
-                                console.log('Résultats des incidents pour les postes concernés: ' + rows[i].incident_id + ' et ' + rows[i].ordre_id);
+                                console.log('Résultats des incidents pour le poste concernés: ' + rows[i].incident_id + ' et ' + rows[i].ordre_id+ ' et ' + rows[i].vehicule_desc+ ' et ' + rows[i].poste_desc);
                                 let tableToAppend = $('#tableToAppend'+posteV);
                                 text_row = '<tr><td>' +rows[i].incident_id+ '</td><td>'+rows[i].ordre_id+ '</td></tr>';
                                 tableToAppend.append(text_row);
