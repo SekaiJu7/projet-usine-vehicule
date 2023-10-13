@@ -13,11 +13,20 @@ body {
     line-height: 1.3;
 }
 h1 {
-    color: blueviolet;
     font: 30pt Georgia, "Times New Roman", Times, serif;
     line-height: 1.3;
     text-align: center;
-  }
+}
+
+h1:has(> strong) {
+    color: #29425e; 
+    background-color: rgba(127, 154, 184, 0.5);
+}
+
+#vehicule_desc1{
+    color: #353a40;
+}
+
 h2 {
     color: blue;
     font: 24pt Georgia, "Times New Roman", Times, serif;

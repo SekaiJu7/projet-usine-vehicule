@@ -24,7 +24,7 @@ server.use(express.static(__dirname)); // Cela permettra de servir les fichiers 
 
 server.get('/vehicules', (req, res) => {
     // Connexion à la base de donnée SQlite
-    const db = new sqlite3.Database('productionDB.sqlite', err => {
+    const db = new sqlite3.Database('./data/productionDB.sqlite', err => {
     if (err) {
       return console.error(err.message);
     }
@@ -42,7 +42,7 @@ server.get('/vehicules', (req, res) => {
 });
 
 server.post('/submit', async function (req, res) {
-    const db = new sqlite3.Database('./productionDB.sqlite');
+    const db = new sqlite3.Database('./data/productionDB.sqlite');
     const vehicule = req.body.vehicule;
     const poste = req.body.poste; //non utilisé
     const ordre = req.body.ordre; //non utilisé
@@ -191,8 +191,8 @@ server.post('/submit', async function (req, res) {
         fs.writeFileSync('cheer.html', updatedHtml);
         const timestamp = Date.now();
         console.log(timestamp);
-        // const pdfFileName = `Rapport_vehicule_${timestamp}.pdf`
-        const pdfFileName = `Rapport_vehicule.pdf`
+        const pdfFileName = `Rapport_vehicule_${timestamp}.pdf`
+        // const pdfFileName = `Rapport_vehicule.pdf`
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
 
@@ -203,7 +203,7 @@ server.post('/submit', async function (req, res) {
         await page.goto(fileUrl, { waitUntil: 'networkidle0' });
 
         // Générez un PDF à partir de la page HTML
-        await page.pdf({ path: pdfFileName, format: 'A4', printBackground: true });
+        await page.pdf({ path: './output/' + pdfFileName, format: 'A4', printBackground: true });
 
         await browser.close();
 
