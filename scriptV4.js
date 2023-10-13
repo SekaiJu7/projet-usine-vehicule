@@ -30,7 +30,7 @@ server.post('/submit', async function (req, res) {
     console.log(vehicule, poste, ordre);
     res.send('Formulaire soumis avec succès');
 
-    //utilisé 3 fois - Description du véhicule
+    //utilisé 3 foissur la partie fixe - Description du véhicule
     await new Promise((resolve, reject) => {
         db.all('SELECT vehicule_desc FROM vehicule WHERE vehicule_id=' + vehicule, (err, rows) => {
             if (err) {
@@ -49,7 +49,7 @@ server.post('/submit', async function (req, res) {
         });
     });
 
-    // utilisé 3 fois - Description du poste de travail 
+    //utilisé 2 fois sur la partie fixe -  Description du poste de travail 
     await new Promise((resolve, reject) => {
         db.all('SELECT poste_desc FROM poste WHERE poste_id=' + poste, (err, rows) => {
             if (err) {
@@ -82,6 +82,7 @@ server.post('/submit', async function (req, res) {
         });
     });
 
+    //tableau des incidents
     await new Promise((resolve, reject) => {
 
         db.all('SELECT i.incident_id, i.incident_desc, i.etat FROM incident i INNER JOIN ordre o ON i.ordre = o.ordre_id INNER JOIN vehicule v ON o.vehicule=v.vehicule_id WHERE v.vehicule_id= '+ vehicule, (err, rows) => {
@@ -89,19 +90,30 @@ server.post('/submit', async function (req, res) {
                 console.error(err.message);
                 reject(err);
             }else{
-                // console.log("Résultats de la requête d'incidents : ", rows);
-                let incidents = [];
-                for (i=0; i<rows.length;i++){
-                    // console.log("Tableau des incidents: " + rows[i].incident_id);
-                    let data_incident = [];
-                    data_incident.push(rows[i].incident_id, rows[i].incident_desc, rows[i].etat);
-                    incidents.push(data_incident);
-                };
-                let incident_table = $('#incident_table');
-                incidents.forEach(liste => {
-                    text_content = '<tr><td>' + liste[0] + '</td><td>' + liste[1] + '</td><td>' + liste[2] + '</td></tr>';
-                    incident_table.append(text_content);
-                });
+                //si resultat sinon message aucun incident
+                let incident_div = $('#incident_div');
+                if (rows.length > 0){
+                    incident_div.append("<table id='incident_table'><tr id='header'><th style='width: 33%;'>ID</th><th style='width: 33%;'>Description de l'incident</th><th style='width: 33%;'>État</th></tr></table>");
+                    for (i=0; i<rows.length;i++){
+                        let incidents = [];
+                        let data_incident = [];
+                        data_incident.push(rows[i].incident_id, rows[i].incident_desc, rows[i].etat);
+                        incidents.push(data_incident);
+                        let incident_table = $('#incident_table');
+                        incidents.forEach(liste => {
+                            if (rows[i].etat == 'OPEN'){
+                                text_content = '<tr><td>' + liste[0] + '</td><td>' + liste[1] + '</td><td style="background-color: green;">' + liste[2] + '</td></tr>';
+                                incident_table.append(text_content);
+                            }else{
+                                text_content = '<tr><td>' + liste[0] + '</td><td>' + liste[1] + '</td><td style="background-color: red;">' + liste[2] + '</td></tr>';
+                                incident_table.append(text_content);
+                            }
+                        });
+                    };
+                }else{
+                    //ajouter un p "Aucun incident détecté sur le véhicule"
+                    incident_div.append("<br><strong><p>Aucun incident n'a été détecté sur le véhicule.</p></strong>")
+                }
                 resolve();
             }
         });
@@ -122,7 +134,7 @@ server.post('/submit', async function (req, res) {
             });
         });
 
-    console.log(postes_par_vehicule)
+    console.log("liste des postes pour le véhicule: ", postes_par_vehicule);
     //pour chaque poste ayant travaillé sur le véhicule
     for (const posteV of postes_par_vehicule) {
         const incidentsData = await new Promise((resolve, reject) => {
@@ -143,7 +155,6 @@ server.post('/submit', async function (req, res) {
                                 vehicule_desc.text(rows[0].vehicule_desc);
                                 let poste_desc = $('strong.poste_desc'+posteV);
                                 poste_desc.text(rows[0].poste_desc);
-                                // poste_desc.append(`${rows[0].poste}`);
                                 let tb = '<div id="tables'+posteV+'"></div>'
                                 section_poste.append(tb);
                                 let poste_tables = $('#tables'+posteV);
@@ -169,7 +180,7 @@ server.post('/submit', async function (req, res) {
         const updatedHtml = $.html();
         fs.writeFileSync('cheer.html', updatedHtml);
         const timestamp = Date.now();
-        console.log(timestamp)
+        console.log(timestamp);
         // const pdfFileName = `Rapport_vehicule_${timestamp}.pdf`
         const pdfFileName = `Rapport_vehicule.pdf`
         const browser = await puppeteer.launch();
