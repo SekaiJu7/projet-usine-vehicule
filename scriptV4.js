@@ -17,15 +17,33 @@ const htmlContent = fs.readFileSync('index.html', 'utf-8');
 
 //Configuration des routes
 server.get('/', (req, res) => {
-  res.sendFile(__dirname + '/formulaire.html');
+  res.sendFile(__dirname + '/interface3.html');
 });
 
+server.get('/vehicules', (req, res) => {
+    // Connexion à la base de donnée SQlite
+    const db = new sqlite3.Database('productionDB.sqlite', err => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log("Connexion réussie à la base de données");
+  });
+    db.all('SELECT vehicule_id, vehicule_desc FROM vehicule', (err,rows) => {
+        if(err){
+            res.status(500).json({ error: err.message });
+            return;
+        }   
+            console.log(rows);
+            res.json(rows);
+    });
+    db.close();
+});
 
 server.post('/submit', async function (req, res) {
     const db = new sqlite3.Database('./productionDB.sqlite');
     const vehicule = req.body.vehicule;
-    const poste = req.body.poste;
-    const ordre = req.body.ordre;
+    const poste = req.body.poste; //non utilisé
+    const ordre = req.body.ordre; //non utilisé
     const $ = cheerio.load(htmlContent);
     console.log(vehicule, poste, ordre);
     res.send('Formulaire soumis avec succès');
@@ -44,24 +62,6 @@ server.post('/submit', async function (req, res) {
                 vehicule_desc1.text(rows[0].vehicule_desc);
                 vehicule_desc2.text(rows[0].vehicule_desc);
                 vehicule_desc3.text(rows[0].vehicule_desc);
-                resolve();
-            }
-        });
-    });
-
-    //utilisé 2 fois sur la partie fixe -  Description du poste de travail 
-    await new Promise((resolve, reject) => {
-        db.all('SELECT poste_desc FROM poste WHERE poste_id=' + poste, (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                reject(err);
-            } else {
-                console.log('Description du poste de travail: ', rows[0].poste_desc);
-
-                const poste_desc1 = $('#poste_desc1');
-                const poste_desc2 = $('#poste_desc2');
-                poste_desc1.text(rows[0].poste_desc);
-                poste_desc2.text(rows[0].poste_desc);
                 resolve();
             }
         });
@@ -123,17 +123,25 @@ server.post('/submit', async function (req, res) {
 
     //Ici on veut la liste des postes ayant travaillé sur un véhicule 
     const postes_par_vehicule = await new Promise((resolve, reject) => {
-        db.all('SELECT DISTINCT o.poste FROM ordre o WHERE o.vehicule = ' + vehicule, (err, rows)=>{
+        db.all('SELECT DISTINCT o.poste, p.poste_desc FROM ordre o INNER JOIN poste p ON o.poste = p.poste_id WHERE o.vehicule = ' + vehicule, (err, rows)=>{
             if (err){
                 console.log(err.message);
                 reject(err);
             }else{
                 const postes = rows.map(row => row.poste);
+                const postes_desc = rows.map(row=>row.poste_desc);
+                const poste_desc1 = $('#poste_desc1');
+                let text_to_append = '';
+                for (const item of postes_desc){
+                    text_to_append = text_to_append + item + ' | ';
+                }
+                poste_desc1.text(text_to_append);
                 resolve(postes);
                 }
             });
         });
 
+    
     console.log("liste des postes pour le véhicule: ", postes_par_vehicule);
     //pour chaque poste ayant travaillé sur le véhicule
     for (const posteV of postes_par_vehicule) {
