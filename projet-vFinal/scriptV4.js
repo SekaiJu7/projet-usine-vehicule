@@ -201,6 +201,84 @@ server.post('/submit', async function (req, res) {
 
         // Accédez à la page HTML
         await page.goto(fileUrl, { waitUntil: 'networkidle0' });
+        
+        await page.evaluate(() => { const contenu = document.getElementById("pdf");
+
+        // Fonction pour retrouver la page exacte où se trouve les titres du sommaire
+        function findPageNumber(htmlFileContent, searchString) {
+            const pageBreaks = htmlFileContent.split('<div class="page-break"></div>');
+            let regex; 
+        
+            if (searchString.includes("Liste des incidents")) {
+                regex = /Liste des incidents(?! du véhicule)/;
+            } else if (searchString.includes("Poste de travail")) {
+                regex = /Poste de travail : (.*?)(?= -|$)/;
+            } else {
+                regex = new RegExp(searchString);
+            }
+        
+            let currentPage = 1;
+            for (let i = 0; i < pageBreaks.length; i++) {
+                if (regex.test(pageBreaks[i])) {
+                    break;
+                }
+                currentPage++;
+            }
+        
+            return currentPage;
+        }
+
+        // Fonction pour ajouter des points aux titres du sommaire
+
+        const maxLength = 200;
+        function addDotsToMaxLength(inputString, maxLength) {
+            const difference = maxLength - inputString.length;
+            if (difference > 0) {
+                const dots = '.'.repeat(difference);
+                return inputString + dots;
+            } else {
+                return inputString;
+            }
+        }
+
+        //Ajout du sommaire à l'emplacement dédié en ajoutant le numéro de page et les pointillés aux titres
+
+        // Sélectionnez la liste de la table des matières
+        const tableDesMatières = document.getElementById("tableDesMatières");
+                      
+        // Parcourez les titres de section (h2 et h3) dans la zone de contenu
+        const titresSections = document.querySelectorAll("h2, h3");
+        
+        // Variable avec le contenu de la page HTML nécessaire pour appeler la fonction findPageNumber()
+        const pageContent = document.documentElement.outerHTML;
+        
+
+        // Créez des liens pour chaque titre de section dans la table des matières
+        titresSections.forEach(function(titreSection, index) {
+            const lien = document.createElement("a");
+            const originalText = titreSection.textContent;
+            const modifiedText = originalText.padEnd(maxLength, '.'); 
+            console.log("Le nombre de caractères est : " + modifiedText.length);
+            const position = findPageNumber(pageContent, originalText);
+            lien.textContent = modifiedText + position;
+            lien.href = "#section-" + (index + 1);
+            const p = document.createElement("p");
+            p.appendChild(lien);
+            tableDesMatières.appendChild(p);
+            // Ajoutez un identifiant unique à la section
+
+            titreSection.id = "section-" + (index + 1);
+             });
+ 
+        });
+          
+        // Générez un PDF à partir de la page HTML
+        await page.pdf({ path:'./output/' + pdfFileName,     displayHeaderFooter: true,
+        headerTemplate: '<span></span>', // Ajouter un en-tête vide
+        footerTemplate: '<div style="position: fixed;right: 0; font-size: 15px;margin-right: 20px;"><span class="pageNumber"></span></div>', // Ajouter un pied de page avec numéro de page
+        margin: { top: 70, bottom: 70 },
+        format: 'A4',
+       });
 
         // Générez un PDF à partir de la page HTML
         await page.pdf({ path: './output/' + pdfFileName, format: 'A4', printBackground: true });
