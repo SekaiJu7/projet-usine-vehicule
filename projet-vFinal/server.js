@@ -5,6 +5,7 @@ const fs = require('fs');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 const express = require('express');
+const { path } = require('pdfkit');
 //Instanciation du serveur
 const server = express();
 server.use(express.json());
@@ -48,7 +49,7 @@ server.post('/submit', async function (req, res) {
     const ordre = req.body.ordre; //non utilisé
     const $ = cheerio.load(htmlContent);
     console.log(vehicule, poste, ordre);
-    res.send('Formulaire soumis avec succès');
+    // res.send('Formulaire soumis avec succès');
 
     //utilisé 3 foissur la partie fixe - Description du véhicule
     await new Promise((resolve, reject) => {
@@ -288,6 +289,9 @@ server.post('/submit', async function (req, res) {
         fs.unlinkSync('./cheer.html');
 
         console.log('Conversion en PDF terminée.');
+        // res.status(201).json({message: "Le PDF a bien été généré.", pdfFileName});
+        res.send(`<h2 style="color: #2254a3;">La génération du PDF <strong style="font-style: italic; color: #464b52;">${pdfFileName}</strong> s'est terminé avec succès. <br> Le fichier se trouve à l'emplacement suivant: <strong style="font-style: italic; color: #464b52;">./output/${pdfFileName}</strong> </h1>`);
+
         })();
 
     db.close();
