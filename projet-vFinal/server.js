@@ -5,7 +5,7 @@ const fs = require('fs');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 const express = require('express');
-const { path } = require('pdfkit');
+// const { path } = require('pdfkit');
 //Instanciation du serveur
 const server = express();
 server.use(express.json());

@@ -85,3 +85,9 @@ table {
 .page-break {
     page-break-before: always;
 }
+
+/* Styles pour les liens à l'intérieur de la table des matières */
+#tableDesMatières a {
+    text-decoration: none; /* Supprimer la soulignement des liens */
+    color: black; /* Couleur des liens */
+}
